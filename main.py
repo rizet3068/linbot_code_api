@@ -62,7 +62,7 @@ async def run_code(filename: str):
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="File not found")
     try:
-        result = subprocess.run(["python3", filepath], capture_output=True, text=True, timeout=5)
+        result = subprocess.run(["python", filepath], capture_output=True, text=True, timeout=5)
         return {"status": "success", "output": result.stdout or result.stderr}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
