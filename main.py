@@ -2,6 +2,7 @@
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from pydantic import BaseModel
 from datetime import datetime
+import subprocess
 import os
 
 app = FastAPI()
@@ -52,5 +53,16 @@ async def read_file(filename: str):
         with open(filepath, "r", encoding="utf-8") as f:
             content = f.read()
         return PlainTextResponse(content)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/run_code")
+async def run_code(filename: str):
+    filepath = os.path.join(SAVE_DIR, filename)
+    if not os.path.exists(filepath):
+        raise HTTPException(status_code=404, detail="File not found")
+    try:
+        result = subprocess.run(["python3", filepath], capture_output=True, text=True, timeout=5)
+        return {"status": "success", "output": result.stdout or result.stderr}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
