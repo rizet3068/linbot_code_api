@@ -1,5 +1,5 @@
 ﻿from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from pydantic import BaseModel
 from datetime import datetime
 import os
@@ -40,5 +40,17 @@ async def list_files():
     try:
         files = [f for f in os.listdir(SAVE_DIR) if f.endswith(".py")]
         return JSONResponse(content={"files": files})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/read_file")
+async def read_file(filename: str):
+    filepath = os.path.join(SAVE_DIR, filename)
+    if not os.path.exists(filepath):
+        raise HTTPException(status_code=404, detail="File not found")
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            content = f.read()
+        return PlainTextResponse(content)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
